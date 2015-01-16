@@ -37,14 +37,12 @@ EAPI_METHOD = 'https'
 
 # How often to poll for the interfaces (seconds)
 EAPI_POLL_INTERVAL = 3       # in seconds
-
-LINUX_BRIDGE_IP = '10.0.0.1/24'
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 import jsonrpclib
 import os
+import re
 import syslog
-import time
 
 def log(msg):
     msg = '%%ZTPSERVER-4-DAEMON: %s' % msg
@@ -70,18 +68,11 @@ class EApiClient( object ):
         # in interfaceErrorCounters
         cmd = 'show interfaces status connected'
         res = self.run_enable_cmds( [ cmd ] )[ 0 ]
-        return res[ 'interfaceStatuses' ].keys()
+        return [ x for x in res[ 'interfaceStatuses' ].keys()
+                 if not re.match( '^Ma*', x ) ]
 
 
-def wait_for_dhcpd():
-    dhcpd_started = False
-    while not dhcpd_started:
-        dhcpd_started = not os.system( 'pgrep dhcpd' )
-        log( 'Waiting for dhcpd to start...' )
-        time.sleep( 3 )
-    log( 'dhcpd to started' )
-
-def configure( eapi ):
+def start_dhcpd( eapi ):
     log( 'Configuring ZTPServer VM requirements' )
 
     os.system( 'sudo cp /mnt/flash/dhcpd.conf /etc/dhcp/' )
@@ -89,13 +80,8 @@ def configure( eapi ):
 
     interfaces = eapi.connected_interfaces()
     if interfaces:
+        log( 'restarting dhcpd...' )
         os.system( 'sudo service dhcpd restart' )
-        wait_for_dhcpd()
-        log( 'dhcpd started' )
-
-    eapi.run_enable_cmds( [ 'configure terminal',
-                            'virtual-machine ztpserver restart' ] )
-    log( 'ZTPServer VM restarted' )
 
 def monitor_interfaces( eapi ):
     interfaces = []
@@ -103,13 +89,13 @@ def monitor_interfaces( eapi ):
         new_interfaces = eapi.connected_interfaces()
         if [x for x in new_interfaces 
             if x not in interfaces]:
+            log( 'restating dhcpd...' )
             os.system( 'sudo service dhcpd restart' )
-            wait_for_dhcpd()
         interfaces = new_interfaces
         
 def main():
     eapi = EApiClient()
-    configure( eapi )
+    start_dhcpd( eapi )
     monitor_interfaces( eapi )
 
 if __name__ == '__main__':
