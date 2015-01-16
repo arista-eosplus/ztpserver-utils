@@ -1,12 +1,25 @@
 copy flash:dhcpd.rpm extension:
+no extension dhcpd.rpm     
 extension dhcpd.rpm
+
 copy installed-extensions boot-extensions  
-!
+
+configure
+
+username ztpserver secret icanttellyou
+
+man api http-commands
+no protocol http
+protocol https
+no shutdown
+
+no virtual-machine ZTPServer
 virtual-machine ZTPServer
    config-file flash:ztpserver.xml
    enable
-!
+
+no daemon ztpserver
 daemon ztpserver
    command /mnt/flash/ztpserver_daemon &
-!
+
 write memory

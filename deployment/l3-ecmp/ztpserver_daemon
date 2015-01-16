@@ -26,11 +26,10 @@
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 # IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#!/usr/bin/env python
 
 #-------------------Configuration------------------------
-EAPI_USERNAME = 'admin'
-EAPI_PASSWORD = ''
+EAPI_USERNAME = 'ztpserver'
+EAPI_PASSWORD = 'icanttellyou'
 EAPI_ENABLE_PASSWORD = ''
 
 # http/https
@@ -39,7 +38,7 @@ EAPI_METHOD = 'https'
 # How often to poll for the interfaces (seconds)
 EAPI_POLL_INTERVAL = 3       # in seconds
 
-LINUX_BRIDGE_IP = '172.16.130.254/24'
+LINUX_BRIDGE_IP = '10.0.0.1/24'
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 import jsonrpclib
@@ -85,7 +84,7 @@ def wait_for_dhcpd():
 def configure( eapi ):
     log( 'Configuring ZTPServer VM requirements' )
 
-    os.system( 'sudo brctl addbr br0' )
+    os.system( 'sudo brctl addif br0 cpu' )
     os.system( 'sudo ifconfig br0 up' )
     os.system( 'sudo ifconfig br0 %s' % LINUX_BRIDGE_IP )
     log( 'Linux bridge created' )
@@ -96,9 +95,13 @@ def configure( eapi ):
     log( 'ip.forwarding enabled' )
 
     os.system( 'sudo cp /mnt/flash/dhcpd.conf /etc/dhcp/' )
-    os.system( 'sudo /usr/sbin/dhcpd' )
     log( 'dhcpd configured' )
-    wait_for_dhcpd()
+
+    interfaces = eapi.connected_interfaces()
+    if interfaces:
+        os.system( 'sudo service dhcpd restart' )
+        wait_for_dhcpd()
+        log( 'dhcpd started' )
 
     eapi.run_enable_cmds( [ 'configure terminal',
                             'virtual-machine ztpserver restart' ] )
