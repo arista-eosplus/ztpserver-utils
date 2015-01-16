@@ -21,7 +21,7 @@
     <emulator>/usr/bin/qemu-system-x86_64</emulator>
     <disk type='file' device='disk'>
       <driver name='qemu' type='vmdk'/>
-      <source file='/mnt/usb1/ztps.vmdk'/>
+      <source file='/mnt/flash/ztpserver.vmdk'/>
       <target dev='hda' bus='ide'/>
       <alias name='ide0-0-0'/>
       <address type='drive' controller='0' bus='0' unit='0'/>
