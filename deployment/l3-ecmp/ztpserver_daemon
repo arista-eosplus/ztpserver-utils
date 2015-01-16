@@ -84,16 +84,6 @@ def wait_for_dhcpd():
 def configure( eapi ):
     log( 'Configuring ZTPServer VM requirements' )
 
-    os.system( 'sudo brctl addif br0 cpu' )
-    os.system( 'sudo ifconfig br0 up' )
-    os.system( 'sudo ifconfig br0 %s' % LINUX_BRIDGE_IP )
-    log( 'Linux bridge created' )
-
-    # Enable ip.forwarding
-    os.system( 'sudo sysctl net.ipv4.conf.all.forwarding=1' )
-    os.system( 'sudo sysctl net.ipv4.ip_forward=1' )
-    log( 'ip.forwarding enabled' )
-
     os.system( 'sudo cp /mnt/flash/dhcpd.conf /etc/dhcp/' )
     log( 'dhcpd configured' )
 
