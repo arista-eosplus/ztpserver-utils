@@ -11,7 +11,5 @@ virtual-machine ztps
    enable
    exit
 
-ip routing
-
 write memory
 
