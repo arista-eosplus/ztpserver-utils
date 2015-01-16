@@ -1,12 +1,3 @@
-copy flash:dhcpd.rpm extension:
-extension dhcpd.rpm
-copy installed-extensions boot-extensions
-
-virtual-machine ztpserver
-   config-file flash:/ztps.xml
-   enable
-   exit
-
 daemon rphm
    command /mnt/flash/ztpserver-daemon &
    exit
