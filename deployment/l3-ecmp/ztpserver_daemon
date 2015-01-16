@@ -1,0 +1,126 @@
+#!/usr/bin/env python
+#
+# Copyright (c) 2015, Arista Networks, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#  - Redistributions of source code must retain the above copyright notice,
+# this list of conditions and the following disclaimer.
+#  - Redistributions in binary form must reproduce the above copyright
+# notice, this list of conditions and the following disclaimer in the
+# documentation and/or other materials provided with the distribution.
+#  - Neither the name of Arista Networks nor the names of its
+# contributors may be used to endorse or promote products derived from
+# this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ARISTA NETWORKS
+# BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+# BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+# OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+# IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#!/usr/bin/env python
+
+#-------------------Configuration------------------------
+EAPI_USERNAME = 'admin'
+EAPI_PASSWORD = ''
+EAPI_ENABLE_PASSWORD = ''
+
+# http/https
+EAPI_METHOD = 'https'
+
+# How often to poll for the interfaces (seconds)
+EAPI_POLL_INTERVAL = 3       # in seconds
+
+LINUX_BRIDGE_IP = '172.16.130.254/24'
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+import jsonrpclib
+import os
+import syslog
+import time
+
+def log(msg):
+    msg = '%%ZTPSERVER-4-DAEMON: %s' % msg
+    syslog.syslog( msg )
+
+class EApiClient( object ):
+
+    def __init__( self ):
+        url = '%s://%s:%s@localhost/command-api' % \
+              ( EAPI_METHOD, EAPI_USERNAME, EAPI_PASSWORD )
+        self.client = jsonrpclib.Server( url  )
+
+    def run_enable_cmds( self, cmds ):
+        result = self.client.runCmds( 
+            1, [ { 'cmd': 'enable', 
+                   'input': EAPI_ENABLE_PASSWORD } ] +
+            cmds )[ 1: ]
+
+        return result
+
+    def connected_interfaces( self ):
+        # Using text mode in order to be able to match interface shortname
+        # in interfaceErrorCounters
+        cmd = 'show interfaces status connected'
+        res = self.run_enable_cmds( [ cmd ] )[ 0 ]
+        return res[ 'interfaceStatuses' ].keys()
+
+
+def wait_for_dhcpd():
+    dhcpd_started = False
+    while not dhcpd_started:
+        dhcpd_started = not os.system( 'pgrep dhcpd' )
+        log( 'Waiting for dhcpd to start...' )
+        time.sleep( 3 )
+    log( 'dhcpd to started' )
+
+def configure( eapi ):
+    log( 'Configuring ZTPServer VM requirements' )
+
+    os.system( 'sudo brctl addbr br0' )
+    os.system( 'sudo ifconfig br0 up' )
+    os.system( 'sudo ifconfig br0 %s' % LINUX_BRIDGE_IP )
+    log( 'Linux bridge created' )
+
+    # Enable ip.forwarding
+    os.system( 'sudo sysctl net.ipv4.conf.all.forwarding=1' )
+    os.system( 'sudo sysctl net.ipv4.ip_forward=1' )
+    log( 'ip.forwarding enabled' )
+
+    os.system( 'sudo cp /mnt/flash/dhcpd.conf /etc/dhcp/' )
+    os.system( 'sudo /usr/sbin/dhcpd' )
+
+    wait_for_dhcpd()
+
+    eapi.run_enable_cmds( [ 'configure terminal',
+                            'virtual-machine ztpserver restart' ] )
+    log( 'ZTPServer VM restarted' )
+
+def monitor_interfaces( eapi ):
+    interfaces = []
+    while True:
+        new_interfaces = eapi.connected_interfaces()
+        if [x for x in new_interfaces 
+            if x not in interfaces]:
+            os.system( 'sudo service dhcpd restart' )
+            wait_for_dhcpd()
+        interfaces = new_interfaces
+        
+def main():
+    eapi = EApiClient()
+    configure( eapi )
+    monitor_interfaces( eapi )
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        pass
