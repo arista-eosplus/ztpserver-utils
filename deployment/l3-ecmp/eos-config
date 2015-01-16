@@ -1,5 +1,5 @@
 daemon ztpserver
-   command /mnt/flash/ztpserver-daemon &
+   command /mnt/flash/ztpserver_daemon &
    exit
 
 write memory
