@@ -95,9 +95,27 @@ def configure( eapi ):
     os.system( 'sudo sysctl net.ipv4.ip_forward=1' )
     log( 'ip.forwarding enabled' )
 
+    eapi.run_enable_cmds( [ 'configure terminal',
+                            
+                            # Install dhcpd extension
+                            'copy flash:dhcpd.rpm extension:',
+                            'extension dhcpd.rpm',
+                            'copy installed-extensions boot-extensions',
+
+                            # Create virtual machine
+                            'virtual-machine ZTPServer',
+                            'config-file flash:ztpserver.xml',
+                            'enable',
+                            'exit',
+
+                            # Save configuration
+                            'configure terminal',
+                            'write memory' ] )
+    log( 'EOS configured' )
+
     os.system( 'sudo cp /mnt/flash/dhcpd.conf /etc/dhcp/' )
     os.system( 'sudo /usr/sbin/dhcpd' )
-
+    log( 'dhcpd configured' )
     wait_for_dhcpd()
 
     eapi.run_enable_cmds( [ 'configure terminal',
