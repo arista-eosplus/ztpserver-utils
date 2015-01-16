@@ -1,4 +1,4 @@
-daemon rphm
+daemon ztpserver
    command /mnt/flash/ztpserver-daemon &
    exit
 
