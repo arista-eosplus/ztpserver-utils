@@ -1,5 +1,12 @@
+copy flash:dhcpd.rpm extension:
+extension dhcpd.rpm
+copy installed-extensions boot-extensions  
+!
+virtual-machine ZTPServer
+   config-file flash:ztpserver.xml
+   enable
+!
 daemon ztpserver
    command /mnt/flash/ztpserver_daemon &
-   exit
-
+!
 write memory
