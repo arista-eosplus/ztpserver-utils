@@ -24,9 +24,4 @@ no daemon ztpserver
 daemon ztpserver
    command /mnt/flash/ztpserver_daemon &
 
-no interface Loopback100
-interface Loopback100
-   ip address 10.0.0.3/24
-ip route 10.0.0.2/32 Lo2
-
 write memory
