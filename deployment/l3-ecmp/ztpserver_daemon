@@ -86,10 +86,8 @@ def start_dhcpd( eapi ):
     os.system( 'sudo brctl addbr br0' )
     os.system( 'sudo ifconfig br0 up' )
     os.system( 'sudo ifconfig br0 %s' % LINUX_BRIDGE_IP )
-    os.system( 'sudo route add %s/32 br0' % VM_IP )
-
     log( 'Linux bridge created' )
-    
+
     os.system( 'sudo cp /mnt/flash/dhcpd.conf /etc/dhcp/' )
     log( 'dhcpd configured' )
 

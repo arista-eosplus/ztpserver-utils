@@ -6,8 +6,10 @@ copy installed-extensions boot-extensions
 
 configure
 
+no username ztpserver
 username ztpserver secret icanttellyou
 
+no man api http-commands
 man api http-commands
 no protocol http
 protocol https
@@ -21,5 +23,10 @@ virtual-machine ztpserver
 no daemon ztpserver
 daemon ztpserver
    command /mnt/flash/ztpserver_daemon &
+
+no interface Loopback100
+interface Loopback100
+   ip address 10.0.0.3/24
+ip route 10.0.0.2/32 Lo2
 
 write memory
