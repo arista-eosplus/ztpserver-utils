@@ -20,6 +20,7 @@ no virtual-machine ztpserver
 virtual-machine ZTPServer
    disk-image flash:ztpserver.vmdk
    virtual-nic 1 Vlan 100
+   vnc-port 5900
    enable
 
 no daemon ztpserver

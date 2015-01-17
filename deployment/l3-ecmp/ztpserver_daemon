@@ -36,7 +36,7 @@ EAPI_ENABLE_PASSWORD = ''
 EAPI_METHOD = 'https'
 
 # How often to poll for the interfaces (seconds)
-EAPI_POLL_INTERVAL = 3       # in seconds
+EAPI_POLL_INTERVAL = 3
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 import jsonrpclib
