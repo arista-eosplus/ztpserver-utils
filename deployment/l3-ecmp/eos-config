@@ -13,14 +13,9 @@ no protocol http
 protocol https
 no shutdown
 
-interface Vlan 100
-   ip address 10.0.0.1/24
-
 no virtual-machine ztpserver
-virtual-machine ZTPServer
-   disk-image flash:ztpserver.vmdk image-format vmdk
-   virtual-nic 1 Vlan 100
-   vnc-port 5900
+virtual-machine ztpserver
+   config-file flash:ztpserver.xml
    enable
 
 no daemon ztpserver
