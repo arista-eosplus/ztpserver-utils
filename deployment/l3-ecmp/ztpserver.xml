@@ -1,4 +1,4 @@
-<domain type='kvm' id='4'>
+<domain type='kvm' id='1'>
   <name>ztps</name>
   <uuid>43b3f4d5-75c3-db6c-6a15-82d8558b08f6</uuid>
   <memory>1048576</memory>
@@ -61,6 +61,6 @@
     <memballoon model='virtio'>
       <alias name='balloon0'/>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x05' function='0x0'/>
-      </memballoon>
-      </devices>
-      </domain>
+    </memballoon>
+  </devices>
+</domain>
