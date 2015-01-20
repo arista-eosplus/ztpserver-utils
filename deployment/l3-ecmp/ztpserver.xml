@@ -1,6 +1,5 @@
 <domain type='kvm' id='1'>
   <name>ztps</name>
-  <uuid>43b3f4d5-75c3-db6c-6a15-82d8558b08f6</uuid>
   <memory>1048576</memory>
   <currentMemory>1048576</currentMemory>
   <vcpu>1</vcpu>
