@@ -24,6 +24,7 @@ no daemon ztpserver
 daemon ztpserver
    command /mnt/flash/ztpserver_daemon &
 
+no event-handler ztpserver
 event-handler ztpserver
    trigger on-boot
    action bash /mnt/flash/ztpserver.sh
