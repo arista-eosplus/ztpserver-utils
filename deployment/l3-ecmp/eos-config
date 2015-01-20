@@ -24,4 +24,10 @@ no daemon ztpserver
 daemon ztpserver
    command /mnt/flash/ztpserver_daemon &
 
+event-handler ztpserver
+   trigger on-boot
+   action bash /mnt/flash/ztpserver.sh
+   delay 60
+   asynchronous
+
 write memory
